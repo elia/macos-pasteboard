@@ -1,0 +1,33 @@
+{
+  "name": "macos-pasteboard",
+  "version": "0.1.0",
+  "description": "Native macOS pasteboard (clipboard) access for Node.js, including alternative pasteboards like 'find'.",
+  "main": "index.js",
+  "types": "types/index.d.ts",
+  "gypfile": true,
+  "os": ["darwin"],
+  "scripts": {
+    "build": "node-gyp rebuild",
+    "rebuild": "node-gyp rebuild",
+    "prepack": "npm run build",
+    "test": "node examples/smoke.js"
+  },
+  "keywords": [
+    "macos",
+    "pasteboard",
+    "clipboard",
+    "native",
+    "napi",
+    "node-addon",
+    "find-pasteboard"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "node-gyp": "^10.0.1"
+  },
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  }
+}
+
