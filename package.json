@@ -6,11 +6,16 @@
   "types": "types/index.d.ts",
   "gypfile": true,
   "os": ["darwin"],
+  "bin": {
+    "macos-pasteboard-console": "bin/console",
+    "pb-console": "bin/console"
+  },
   "scripts": {
     "build": "node-gyp rebuild",
     "rebuild": "node-gyp rebuild",
     "prepack": "npm run build",
-    "test": "node examples/smoke.js"
+    "test": "node examples/smoke.js",
+    "console": "node bin/console"
   },
   "keywords": [
     "macos",
@@ -30,4 +35,3 @@
     "node-addon-api": "^7.0.0"
   }
 }
-

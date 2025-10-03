@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+'use strict';
+
+const repl = require('repl');
+const os = require('os');
+const path = require('path');
+
+let pb;
+try {
+  pb = require('..');
+} catch (err) {
+  console.error('[macos-pasteboard] Failed to load native addon.');
+  console.error('Try running `npm run build` on macOS, then retry.');
+  console.error(err && err.message ? err.message : err);
+  process.exit(1);
+}
+
+const server = repl.start({
+  prompt: 'pb> ',
+  useGlobal: true,
+  ignoreUndefined: true
+});
+
+// Inject the library into the REPL context
+server.context.pb = pb;
+server.context.pasteboard = pb;
+
+server.on('reset', (ctx) => {
+  ctx.pb = pb;
+  ctx.pasteboard = pb;
+});
+
+// Persist REPL history
+const historyPath = path.join(os.homedir(), '.macos-pasteboard_repl_history');
+if (typeof server.setupHistory === 'function') {
+  server.setupHistory(historyPath, () => {});
+}
+
+console.log('macos-pasteboard loaded as `pb` and `pasteboard`.');
+console.log('Examples: pb.readText(); pb.writeText("hello"); pb.readText("find")');
+
