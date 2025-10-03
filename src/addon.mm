@@ -1,23 +1,5 @@
 #import <AppKit/AppKit.h>
 #include <napi.h>
-
-// Compatibility aliases for older SDKs/macOS versions.
-// Use string-literal fallbacks to avoid deprecation warnings from legacy symbols.
-#ifndef NSPasteboardTypeString
-#define NSPasteboardTypeString @"NSStringPboardType"
-#endif
-#ifndef NSPasteboardNameFind
-#define NSPasteboardNameFind @"NSFindPboard"
-#endif
-#ifndef NSPasteboardNameFont
-#define NSPasteboardNameFont @"NSFontPboard"
-#endif
-#ifndef NSPasteboardNameRuler
-#define NSPasteboardNameRuler @"NSRulerPboard"
-#endif
-#ifndef NSPasteboardNameDrag
-#define NSPasteboardNameDrag @"NSDragPboard"
-#endif
 #ifndef NSPasteboardNameColor
 #define NSPasteboardNameColor NSColorPboard
 #endif
@@ -70,10 +52,7 @@ static Napi::Value ReadText(const Napi::CallbackInfo& info) {
   @autoreleasepool {
     NSPasteboard* pb = PasteboardFromArg(info, 0);
     if (pb == nil) return env.Null();
-    // Prefer modern type, but fall back to legacy NSStringPboardType
-    NSString* preferredType = [pb availableTypeFromArray:@[ NSPasteboardTypeString, @"NSStringPboardType" ]];
-    if (preferredType == nil) return env.Null();
-    NSString* str = [pb stringForType:preferredType];
+    NSString* str = [pb stringForType:NSPasteboardTypeString];
     if (str == nil) return env.Null();
     std::string out([str UTF8String]);
     return Napi::String::New(env, out);
@@ -90,12 +69,10 @@ static Napi::Value WriteText(const Napi::CallbackInfo& info) {
   @autoreleasepool {
     NSPasteboard* pb = PasteboardFromArg(info, 1);
     if (pb == nil) return Napi::Boolean::New(env, false);
-    // Declare both modern and legacy string types for broad compatibility
-    [pb declareTypes:@[ NSPasteboardTypeString, @"NSStringPboardType" ] owner:nil];
+    [pb clearContents];
     NSString* ns = [NSString stringWithUTF8String:text.c_str()];
-    BOOL ok1 = [pb setString:ns forType:NSPasteboardTypeString];
-    BOOL ok2 = [pb setString:ns forType:@"NSStringPboardType"];
-    return Napi::Boolean::New(env, (ok1 == YES) || (ok2 == YES));
+    BOOL ok = [pb setString:ns forType:NSPasteboardTypeString];
+    return Napi::Boolean::New(env, ok == YES);
   }
 }
 
@@ -114,7 +91,7 @@ static Napi::Value HasText(const Napi::CallbackInfo& info) {
   @autoreleasepool {
     NSPasteboard* pb = PasteboardFromArg(info, 0);
     if (pb == nil) return Napi::Boolean::New(env, false);
-    NSString* available = [pb availableTypeFromArray:@[ NSPasteboardTypeString, @"NSStringPboardType" ]];
+    NSString* available = [pb availableTypeFromArray:@[ NSPasteboardTypeString ]];
     return Napi::Boolean::New(env, available != nil);
   }
 }
