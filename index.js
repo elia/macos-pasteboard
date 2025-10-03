@@ -17,10 +17,31 @@ try {
   }
 }
 
+const { execFileSync } = require('child_process');
+
+function verifyFindPasteboard(expected) {
+  try {
+    const out = execFileSync('/usr/bin/pbpaste', ['-pboard', 'find'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+    return out === String(expected);
+  } catch (_) {
+    return false;
+  }
+}
+
 // Export a small ergonomic JS API on top of the native functions
 const api = {
   readText: (pboard) => binding.readText(pboard),
-  writeText: (text, pboard) => binding.writeText(String(text), pboard),
+  writeText: (text, pboard) => {
+    const ok = binding.writeText(String(text), pboard);
+    // For the 'find' pasteboard, ensure system pbpaste sees the same bytes.
+    if (ok && (pboard === 'find' || pboard === 'NSFindPboard' || pboard === 'NSPasteboardNameFind')) {
+      return verifyFindPasteboard(String(text));
+    }
+    return ok;
+  },
   clear: (pboard) => binding.clear(pboard),
   hasText: (pboard) => binding.hasText(pboard),
   types: (pboard) => binding.types(pboard),
@@ -32,4 +53,3 @@ const api = {
 };
 
 module.exports = api;
-
